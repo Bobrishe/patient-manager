@@ -3,6 +3,15 @@ package com.pm.alexki.patientservice.controller;
 import com.pm.alexki.patientservice.dto.PatientRequestDto;
 import com.pm.alexki.patientservice.dto.PatientResponseDto;
 import com.pm.alexki.patientservice.service.PatientService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +23,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -23,14 +30,54 @@ import java.util.UUID;
 
 @Log4j2
 @RestController
-@RequestMapping("/patients")
+@org.springframework.web.bind.annotation.RequestMapping("/patients")
 @RequiredArgsConstructor
+@Tag(name = "Patient", description = "API for managing patients")
 public class PatientController {
     private final PatientService patientService;
     private final String uuidPattern = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$";
     private final String uuidPatternMessage = "The provided ID must be a valid UUID format";
 
     @GetMapping
+    @Operation(
+            summary = "Get all patients",
+            description = "Returns a list of all patients registered in the system. Returns 404 if no patients are found.",
+            tags = {"Patient"}
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully retrieved list of patients",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = PatientResponseDto.class),
+                            examples = @ExampleObject(
+                                    name = "patient-list-example",
+                                    value = "[\n" +
+                                            "  {\n" +
+                                            "    \"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n" +
+                                            "    \"name\": \"John Doe\",\n" +
+                                            "    \"email\": \"john.doe@example.com\",\n" +
+                                            "    \"address\": \"123 Main St, Springfield\",\n" +
+                                            "    \"dateOfBirth\": \"1990-01-15\"\n" +
+                                            "  },\n" +
+                                            "  {\n" +
+                                            "    \"id\": \"4fa85f64-5717-4562-b3fc-2c963f66afa7\",\n" +
+                                            "    \"name\": \"Jane Smith\",\n" +
+                                            "    \"email\": \"jane.smith@example.com\",\n" +
+                                            "    \"address\": \"456 Oak Ave, Shelbyville\",\n" +
+                                            "    \"dateOfBirth\": \"1985-07-22\"\n" +
+                                            "  }\n" +
+                                            "]"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "No patients found",
+                    content = @Content
+            )
+    })
     public ResponseEntity<List<PatientResponseDto>> getPatients() {
         var patients = patientService.getAllPatients();
         if (patients.isEmpty()) {
@@ -42,27 +89,176 @@ public class PatientController {
     }
 
     @PostMapping
-    public ResponseEntity<PatientResponseDto> createPatient(@Valid @RequestBody PatientRequestDto patientRequestDto) {
+    @Operation(
+            summary = "Create a new patient",
+            description = "Creates a new patient record with the provided information.",
+            tags = {"Patient"}
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Patient created successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = PatientResponseDto.class),
+                            examples = @ExampleObject(
+                                    name = "patient-response-example",
+                                    value = "{\n" +
+                                            "  \"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n" +
+                                            "  \"name\": \"John Doe\",\n" +
+                                            "  \"email\": \"john.doe@example.com\",\n" +
+                                            "  \"address\": \"123 Main St, Springfield\",\n" +
+                                            "  \"dateOfBirth\": \"1990-01-15\"\n" +
+                                            "}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input data — validation failed",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "validation-error-example",
+                                    value = "{\n" +
+                                            "  \"name\": \"Name is required\",\n" +
+                                            "  \"email\": \"Enter a correct email\"\n" +
+                                            "}"
+                            )
+                    )
+            )
+    })
+    public ResponseEntity<PatientResponseDto> createPatient(
+            @Valid
+            @RequestBody(
+                    description = "Patient object that needs to be created",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = PatientRequestDto.class),
+                            examples = @ExampleObject(
+                                    name = "patient-request-example",
+                                    value = "{\n" +
+                                            "  \"name\": \"John Doe\",\n" +
+                                            "  \"email\": \"john.doe@example.com\",\n" +
+                                            "  \"address\": \"123 Main St, Springfield\",\n" +
+                                            "  \"dateOfBirth\": \"1990-01-15\",\n" +
+                                            "  \"registeredDate\": \"2026-01-01\"\n" +
+                                            "}"
+                            )
+                    )
+            )
+            PatientRequestDto patientRequestDto) {
         PatientResponseDto newPatient = patientService.createPatient(patientRequestDto);
         return ResponseEntity.ok().body(newPatient);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PatientResponseDto> updatePatient(@PathVariable
-                                                            @Pattern(regexp = uuidPattern, message = uuidPatternMessage)
-                                                            UUID id,
-                                                            @RequestBody PatientRequestDto requestDto) {
+    @Operation(
+            summary = "Update an existing patient",
+            description = "Updates a patient's information based on their unique ID.",
+            tags = {"Patient"}
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Patient updated successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = PatientResponseDto.class),
+                            examples = @ExampleObject(
+                                    name = "patient-response-example",
+                                    value = "{\n" +
+                                            "  \"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n" +
+                                            "  \"name\": \"John Doe\",\n" +
+                                            "  \"email\": \"john.doe@example.com\",\n" +
+                                            "  \"address\": \"123 Main St, Springfield\",\n" +
+                                            "  \"dateOfBirth\": \"1990-01-15\"\n" +
+                                            "}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid UUID or input data — validation failed",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Patient not found",
+                    content = @Content
+            )
+    })
+    public ResponseEntity<PatientResponseDto> updatePatient(
+            @Parameter(
+                    description = "Unique identifier of the patient to update",
+                    required = true,
+                    schema = @Schema(type = "string", format = "uuid"),
+                    example = "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+            )
+            @PathVariable
+            @Pattern(regexp = uuidPattern, message = uuidPatternMessage)
+            UUID id,
+            @Valid
+            @RequestBody(
+                    description = "Updated patient object",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = PatientRequestDto.class),
+                            examples = @ExampleObject(
+                                    name = "patient-request-example",
+                                    value = "{\n" +
+                                            "  \"name\": \"John Doe\",\n" +
+                                            "  \"email\": \"john.doe@example.com\",\n" +
+                                            "  \"address\": \"123 Main St, Springfield\",\n" +
+                                            "  \"dateOfBirth\": \"1990-01-15\",\n" +
+                                            "  \"registeredDate\": \"2026-01-01\"\n" +
+                                            "}"
+                            )
+                    )
+            )
+            PatientRequestDto requestDto) {
 
         var updatedPatient = patientService.updatePatient(id, requestDto);
         return ResponseEntity.ok().body(updatedPatient);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePatient(@PathVariable
-                              @Pattern(regexp = uuidPattern, message = uuidPatternMessage)
-                              UUID id) {
+    @Operation(
+            summary = "Delete a patient",
+            description = "Deletes a patient record based on their unique ID.",
+            tags = {"Patient"}
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Patient deleted successfully",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid UUID format",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Patient not found",
+                    content = @Content
+            )
+    })
+    public ResponseEntity<Void> deletePatient(
+            @Parameter(
+                    description = "Unique identifier of the patient to delete",
+                    required = true,
+                    schema = @Schema(type = "string", format = "uuid"),
+                    example = "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+            )
+            @PathVariable
+            @Pattern(regexp = uuidPattern, message = uuidPatternMessage)
+            UUID id) {
         patientService.deletePatient(id);
-        
+
         return ResponseEntity.noContent().build();
     }
 
