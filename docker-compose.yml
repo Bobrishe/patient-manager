@@ -3,6 +3,8 @@ services:
     image: postgres:17-alpine
     container_name: patient-service-db
     restart: unless-stopped
+    networks:
+      - patient-network
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -17,24 +19,42 @@ services:
       timeout: 5s
       retries: 5
 
-  patient-service:
+#  patient-service:
+#    image: patient-service:latest
+#    build:
+#      context: ./patient-service
+#      dockerfile: Dockerfile
+#    container_name: patient-service
+#    restart: unless-stopped
+#    ports:
+#      - "4000:4000"
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+#      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+#      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+#      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+#      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+#      SPRING_SQL_INIT_MODE: always
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+
+  billing-service:
+    image: billing-service:latest
     build:
-      context: ./patient-service
+      context: ./billing-service
       dockerfile: Dockerfile
-    container_name: patient-service
+    container_name: billing-service
     restart: unless-stopped
+    networks:
+      - patient-network
     ports:
-      - "4000:4000"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_SQL_INIT_MODE: always
-    depends_on:
-      postgres:
-        condition: service_healthy
+      - "4001:4001"
+      - "9001:9001"
 
 volumes:
   postgres_data:
+
+networks:
+  patient-network:
+    driver: bridge
