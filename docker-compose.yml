@@ -10,7 +10,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -26,18 +26,26 @@ services:
 #      dockerfile: Dockerfile
 #    container_name: patient-service
 #    restart: unless-stopped
+#    networks:
+#      - patient-network
 #    ports:
-#      - "4000:4000"
+#      - "${PATIENT_SERVICE_PORT}:4000"
 #    environment:
-#      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
-#      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
-#      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-#      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
-#      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-#      SPRING_SQL_INIT_MODE: always
+#      SPRING_APPLICATION_NAME: ${PATIENT_SERVICE_APPLICATION_NAME}
+#      SERVER_PORT: ${PATIENT_SERVICE_PORT}
+#      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+#      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+#      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+#      SPRING_DATASOURCE_DRIVER_CLASS_NAME: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
+#      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
+#      SPRING_SQL_INIT_MODE: ${SPRING_SQL_INIT_MODE}
+#      BILLING_SERVICE_ADDRESS: ${BILLING_SERVICE_ADDRESS}
+#      BILLING_SERVICE_PORT: ${BILLING_SERVICE_GRPC_PORT}
 #    depends_on:
 #      postgres:
 #        condition: service_healthy
+#      billing-service:
+#        condition: service_started
 
   billing-service:
     image: billing-service:latest
@@ -49,8 +57,12 @@ services:
     networks:
       - patient-network
     ports:
-      - "4001:4001"
-      - "9001:9001"
+      - "${BILLING_SERVICE_PORT}:4001"
+      - "${BILLING_SERVICE_GRPC_PORT}:9001"
+    environment:
+      SPRING_APPLICATION_NAME: ${BILLING_SERVICE_APPLICATION_NAME}
+      SERVER_PORT: ${BILLING_SERVICE_PORT}
+      GRPC_SERVER_PORT: ${BILLING_SERVICE_GRPC_PORT}
 
 volumes:
   postgres_data:

@@ -1,6 +1,7 @@
 package com.pm.alexki.patientservice.exception;
 
 import com.pm.alexki.patientservice.dto.ResponseErrorDto;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -28,6 +29,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(PatientNotFountException.class)
     public ResponseEntity<ResponseErrorDto> handleParientNotFoundException(PatientNotFountException ex) {
-        return ResponseEntity.badRequest().body(new ResponseErrorDto(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseErrorDto(ex.getMessage()));
     }
 }

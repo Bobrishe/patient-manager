@@ -1,23 +1,22 @@
 spring:
   application:
-    name: patient-service
-
-#  h2:
-#    console:
-#      path: /h2-console
-#
-#  datasource:
-#    driver-class-name: org.h2.Driver
-#    url: jdbc:h2:mem:testdb
-#    username: admin-viewer
-#    password: password
-#
-#  sql:
-#    init:
-#      mode: always
-#  jpa:
-#    hibernate:
-#      ddl-auto: update
+    name: ${SPRING_APPLICATION_NAME:patient-service}
+  datasource:
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:org.h2.Driver}
+    url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:testdb}
+    username: ${SPRING_DATASOURCE_USERNAME:admin}
+    password: ${SPRING_DATASOURCE_PASSWORD:password}
+  sql:
+    init:
+      mode: ${SPRING_SQL_INIT_MODE:always}
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
 
 server:
-  port: 4000
+  port: ${PATIENT_SERVICE_PORT:4000}
+
+billing:
+  service:
+    address: ${BILLING_SERVICE_ADDRESS:localhost}
+    port: ${BILLING_SERVICE_GRPC_PORT:9001}

@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,6 +22,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -53,22 +53,23 @@ public class PatientController {
                             schema = @Schema(implementation = PatientResponseDto.class),
                             examples = @ExampleObject(
                                     name = "patient-list-example",
-                                    value = "[\n" +
-                                            "  {\n" +
-                                            "    \"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n" +
-                                            "    \"name\": \"John Doe\",\n" +
-                                            "    \"email\": \"john.doe@example.com\",\n" +
-                                            "    \"address\": \"123 Main St, Springfield\",\n" +
-                                            "    \"dateOfBirth\": \"1990-01-15\"\n" +
-                                            "  },\n" +
-                                            "  {\n" +
-                                            "    \"id\": \"4fa85f64-5717-4562-b3fc-2c963f66afa7\",\n" +
-                                            "    \"name\": \"Jane Smith\",\n" +
-                                            "    \"email\": \"jane.smith@example.com\",\n" +
-                                            "    \"address\": \"456 Oak Ave, Shelbyville\",\n" +
-                                            "    \"dateOfBirth\": \"1985-07-22\"\n" +
-                                            "  }\n" +
-                                            "]"
+                                    value = """
+                                            [
+                                              {
+                                                "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                                                "name": "John Doe",
+                                                "email": "john.doe@example.com",
+                                                "address": "123 Main St, Springfield",
+                                                "dateOfBirth": "1990-01-15"
+                                              },
+                                              {
+                                                "id": "4fa85f64-5717-4562-b3fc-2c963f66afa7",
+                                                "name": "Jane Smith",
+                                                "email": "jane.smith@example.com",
+                                                "address": "456 Oak Ave, Shelbyville",
+                                                "dateOfBirth": "1985-07-22"
+                                              }
+                                            ]"""
                             )
                     )
             ),
@@ -103,13 +104,14 @@ public class PatientController {
                             schema = @Schema(implementation = PatientResponseDto.class),
                             examples = @ExampleObject(
                                     name = "patient-response-example",
-                                    value = "{\n" +
-                                            "  \"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n" +
-                                            "  \"name\": \"John Doe\",\n" +
-                                            "  \"email\": \"john.doe@example.com\",\n" +
-                                            "  \"address\": \"123 Main St, Springfield\",\n" +
-                                            "  \"dateOfBirth\": \"1990-01-15\"\n" +
-                                            "}"
+                                    value = """
+                                            {
+                                              "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                                              "name": "John Doe",
+                                              "email": "john.doe@example.com",
+                                              "address": "123 Main St, Springfield",
+                                              "dateOfBirth": "1990-01-15"
+                                            }"""
                             )
                     )
             ),
@@ -120,17 +122,19 @@ public class PatientController {
                             mediaType = "application/json",
                             examples = @ExampleObject(
                                     name = "validation-error-example",
-                                    value = "{\n" +
-                                            "  \"name\": \"Name is required\",\n" +
-                                            "  \"email\": \"Enter a correct email\"\n" +
-                                            "}"
+                                    value = """
+                                            {
+                                              "name": "Name is required",
+                                              "email": "Enter a correct email"
+                                            }"""
                             )
                     )
             )
     })
     public ResponseEntity<PatientResponseDto> createPatient(
             @Valid
-            @RequestBody(
+            @RequestBody
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Patient object that needs to be created",
                     required = true,
                     content = @Content(
@@ -138,13 +142,14 @@ public class PatientController {
                             schema = @Schema(implementation = PatientRequestDto.class),
                             examples = @ExampleObject(
                                     name = "patient-request-example",
-                                    value = "{\n" +
-                                            "  \"name\": \"John Doe\",\n" +
-                                            "  \"email\": \"john.doe@example.com\",\n" +
-                                            "  \"address\": \"123 Main St, Springfield\",\n" +
-                                            "  \"dateOfBirth\": \"1990-01-15\",\n" +
-                                            "  \"registeredDate\": \"2026-01-01\"\n" +
-                                            "}"
+                                    value = """
+                                            {
+                                              "name": "John Doe",
+                                              "email": "john.doe@example.com",
+                                              "address": "123 Main St, Springfield",
+                                              "dateOfBirth": "1990-01-15",
+                                              "registeredDate": "2026-01-01"
+                                            }"""
                             )
                     )
             )
@@ -168,13 +173,14 @@ public class PatientController {
                             schema = @Schema(implementation = PatientResponseDto.class),
                             examples = @ExampleObject(
                                     name = "patient-response-example",
-                                    value = "{\n" +
-                                            "  \"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n" +
-                                            "  \"name\": \"John Doe\",\n" +
-                                            "  \"email\": \"john.doe@example.com\",\n" +
-                                            "  \"address\": \"123 Main St, Springfield\",\n" +
-                                            "  \"dateOfBirth\": \"1990-01-15\"\n" +
-                                            "}"
+                                    value = """
+                                            {
+                                              "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                                              "name": "John Doe",
+                                              "email": "john.doe@example.com",
+                                              "address": "123 Main St, Springfield",
+                                              "dateOfBirth": "1990-01-15"
+                                            }"""
                             )
                     )
             ),
@@ -200,7 +206,8 @@ public class PatientController {
             @Pattern(regexp = uuidPattern, message = uuidPatternMessage)
             UUID id,
             @Valid
-            @RequestBody(
+            @RequestBody
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Updated patient object",
                     required = true,
                     content = @Content(
@@ -208,13 +215,14 @@ public class PatientController {
                             schema = @Schema(implementation = PatientRequestDto.class),
                             examples = @ExampleObject(
                                     name = "patient-request-example",
-                                    value = "{\n" +
-                                            "  \"name\": \"John Doe\",\n" +
-                                            "  \"email\": \"john.doe@example.com\",\n" +
-                                            "  \"address\": \"123 Main St, Springfield\",\n" +
-                                            "  \"dateOfBirth\": \"1990-01-15\",\n" +
-                                            "  \"registeredDate\": \"2026-01-01\"\n" +
-                                            "}"
+                                    value = """
+                                            {
+                                              "name": "John Doe",
+                                              "email": "john.doe@example.com",
+                                              "address": "123 Main St, Springfield",
+                                              "dateOfBirth": "1990-01-15",
+                                              "registeredDate": "2026-01-01"
+                                            }"""
                             )
                     )
             )

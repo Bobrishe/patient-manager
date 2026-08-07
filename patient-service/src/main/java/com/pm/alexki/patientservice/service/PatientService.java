@@ -4,6 +4,7 @@ import com.pm.alexki.patientservice.dto.PatientRequestDto;
 import com.pm.alexki.patientservice.dto.PatientResponseDto;
 import com.pm.alexki.patientservice.exception.PatientAlreadyExistsException;
 import com.pm.alexki.patientservice.exception.PatientNotFountException;
+import com.pm.alexki.patientservice.grpc.BillingServiceGrpcClient;
 import com.pm.alexki.patientservice.mapper.PatientDtoMapper;
 import com.pm.alexki.patientservice.model.Patient;
 import com.pm.alexki.patientservice.repository.PatientRepository;
@@ -20,6 +21,7 @@ import java.util.UUID;
 public class PatientService {
     private final PatientRepository repository;
     private final PatientDtoMapper mapper;
+    private final BillingServiceGrpcClient grpcClient;
 
     public List<PatientResponseDto> getAllPatients() {
         List<Patient> patients = repository.findAll();
@@ -39,9 +41,12 @@ public class PatientService {
             throw new PatientAlreadyExistsException("Patient with email %s already exists".formatted(email));
         }
 
-        var patient = repository.save(patientEntity);
+        var newPatient = repository.save(patientEntity);
 
-        return mapper.toDto(patient);
+        grpcClient.createBillingAccount(newPatient.getId().toString(),
+                newPatient.getName(), newPatient.getEmail());
+
+        return mapper.toDto(newPatient);
 
     }
 

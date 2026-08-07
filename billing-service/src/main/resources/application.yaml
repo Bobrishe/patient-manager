@@ -1,9 +1,10 @@
 spring:
   application:
-    name: billing-service
+    name: ${SPRING_APPLICATION_NAME:billing-service}
 
 server:
-  port: 4001
+  port: ${BILLING_SERVICE_PORT:4001}
+
 grpc:
   server:
-    port: 9001
+    port: ${BILLING_SERVICE_GRPC_PORT:9001}
