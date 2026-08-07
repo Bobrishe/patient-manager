@@ -5,6 +5,7 @@ import com.pm.alexki.patientservice.dto.PatientResponseDto;
 import com.pm.alexki.patientservice.exception.PatientAlreadyExistsException;
 import com.pm.alexki.patientservice.exception.PatientNotFountException;
 import com.pm.alexki.patientservice.grpc.BillingServiceGrpcClient;
+import com.pm.alexki.patientservice.kafka.KafkaProducer;
 import com.pm.alexki.patientservice.mapper.PatientDtoMapper;
 import com.pm.alexki.patientservice.model.Patient;
 import com.pm.alexki.patientservice.repository.PatientRepository;
@@ -22,6 +23,7 @@ public class PatientService {
     private final PatientRepository repository;
     private final PatientDtoMapper mapper;
     private final BillingServiceGrpcClient grpcClient;
+    private final KafkaProducer kafkaProducer;
 
     public List<PatientResponseDto> getAllPatients() {
         List<Patient> patients = repository.findAll();
@@ -45,6 +47,8 @@ public class PatientService {
 
         grpcClient.createBillingAccount(newPatient.getId().toString(),
                 newPatient.getName(), newPatient.getEmail());
+
+        kafkaProducer.sendEvent(newPatient);
 
         return mapper.toDto(newPatient);
 

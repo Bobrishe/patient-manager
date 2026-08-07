@@ -1,6 +1,6 @@
 spring:
   application:
-    name: ${SPRING_APPLICATION_NAME:billing-service}
+    name: ${SPRING_APPLICATION_NAME_BILLING:billing-service}
 
 server:
   port: ${BILLING_SERVICE_PORT:4001}
