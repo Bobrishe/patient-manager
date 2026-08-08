@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import patient.events.PatientEventOuterClass.PatientEvent;
+import patient.events.PatientEvent;
 
 @Log4j2
 @Service
