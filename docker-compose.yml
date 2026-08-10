@@ -19,36 +19,34 @@ services:
       timeout: 5s
       retries: 5
 
-#  patient-service:
-#    image: patient-service:latest
-#    build:
-#      context: ./patient-service
-#      dockerfile: Dockerfile
-#    container_name: patient-service
-#    restart: unless-stopped
-#    networks:
-#      - patient-network
-#    ports:
-#      - "${PATIENT_SERVICE_PORT}:4000"
-#    environment:
-#      SPRING_APPLICATION_NAME: ${SPRING_APPLICATION_NAME_PATIENT}
-#      SERVER_PORT: ${PATIENT_SERVICE_PORT}
-#      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
-#      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
-#      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-#      SPRING_DATASOURCE_DRIVER_CLASS_NAME: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
-#      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
-#      SPRING_SQL_INIT_MODE: ${SPRING_SQL_INIT_MODE}
-#      BILLING_SERVICE_ADDRESS: ${BILLING_SERVICE_ADDRESS}
-#      BILLING_SERVICE_PORT: ${BILLING_SERVICE_GRPC_PORT}
-#      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-#    depends_on:
-#      postgres:
-#        condition: service_healthy
-#      billing-service:
-#        condition: service_started
-#      kafka:
-#        condition: service_healthy
+  patient-service:
+    image: patient-service:latest
+    build:
+      context: ./patient-service
+      dockerfile: Dockerfile
+    container_name: patient-service
+    restart: unless-stopped
+    networks:
+      - patient-network
+    environment:
+      SPRING_APPLICATION_NAME: ${SPRING_APPLICATION_NAME_PATIENT}
+      SERVER_PORT: ${PATIENT_SERVICE_PORT}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
+      SPRING_SQL_INIT_MODE: ${SPRING_SQL_INIT_MODE}
+      BILLING_SERVICE_ADDRESS: ${BILLING_SERVICE_ADDRESS}
+      BILLING_SERVICE_PORT: ${BILLING_SERVICE_GRPC_PORT}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      billing-service:
+        condition: service_started
+      kafka:
+        condition: service_healthy
 
   billing-service:
     image: billing-service:latest
