@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: ${SPRING_APPLICATION_NAME_PATIENT:patient-service}
+  datasource:
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:org.h2.Driver}
+    url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:testdb}
+    username: ${SPRING_DATASOURCE_USERNAME:admin}
+    password: ${SPRING_DATASOURCE_PASSWORD:password}
+  sql:
+    init:
+      mode: ${SPRING_SQL_INIT_MODE:always}
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+
+  kafka:
+    bootstrap-servers: localhost:9094
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+
+server:
+  port: ${PATIENT_SERVICE_PORT:4000}
+
+billing:
+  service:
+    address: ${BILLING_SERVICE_ADDRESS:localhost}
+    port: ${BILLING_SERVICE_GRPC_PORT:9001}

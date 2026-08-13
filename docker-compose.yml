@@ -1,0 +1,161 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: patient-service-db
+    restart: unless-stopped
+    networks:
+      - patient-network
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    image: postgres:17-alpine
+    container_name: auth-service-db
+    restart: unless-stopped
+    networks:
+      - patient-network
+    environment:
+      POSTGRES_DB: ${AUTH_POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${AUTH_POSTGRES_PORT}:5432"
+    volumes:
+      - auth_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  patient-service:
+    image: patient-service:latest
+    build:
+      context: ./patient-service
+      dockerfile: Dockerfile
+    container_name: patient-service
+    restart: unless-stopped
+    networks:
+      - patient-network
+    environment:
+      SPRING_APPLICATION_NAME: ${SPRING_APPLICATION_NAME_PATIENT}
+      SERVER_PORT: ${PATIENT_SERVICE_PORT}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
+      SPRING_SQL_INIT_MODE: ${SPRING_SQL_INIT_MODE}
+      BILLING_SERVICE_ADDRESS: ${BILLING_SERVICE_ADDRESS}
+      BILLING_SERVICE_PORT: ${BILLING_SERVICE_GRPC_PORT}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      billing-service:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+
+  billing-service:
+    image: billing-service:latest
+    build:
+      context: ./billing-service
+      dockerfile: Dockerfile
+    container_name: billing-service
+    restart: unless-stopped
+    networks:
+      - patient-network
+    ports:
+      - "${BILLING_SERVICE_PORT}:4001"
+      - "${BILLING_SERVICE_GRPC_PORT}:9001"
+    environment:
+      SPRING_APPLICATION_NAME: ${SPRING_APPLICATION_NAME_BILLING}
+      SERVER_PORT: ${BILLING_SERVICE_PORT}
+      GRPC_SERVER_PORT: ${BILLING_SERVICE_GRPC_PORT}
+
+  analytics-service:
+    image: analytics-service:latest
+    build:
+      context: ./analytics-service
+      dockerfile: Dockerfile
+    container_name: analytics-service
+    restart: unless-stopped
+    networks:
+      - patient-network
+    ports:
+      - "${ANALYTICS_SERVICE_PORT}:4002"
+    environment:
+      SPRING_APPLICATION_NAME: analytics-service
+      SERVER_PORT: 4002
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+  kafka:
+    image: apache/kafka:latest
+    container_name: kafka
+    restart: unless-stopped
+    networks:
+      - patient-network
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+    environment:
+      KAFKA_ENABLE_KRAFT: yes
+      KAFKA_NODE_ID: 0
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 0@kafka:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      KAFKA_PROCESS_ROLES: controller,broker
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: [ "CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    restart: unless-stopped
+    networks:
+      - patient-network
+    ports:
+      - "8082:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      DYNAMIC_CONFIG_ENABLED: "true"
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  kafka_data:
+  auth_data:
+
+networks:
+  patient-network:
+    driver: bridge

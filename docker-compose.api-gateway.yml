@@ -1,0 +1,31 @@
+# Additional services for the API gateway.
+#
+# Run together with the main stack (recommended):
+#   docker compose -f docker-compose.yml -f docker-compose.api-gateway.yml up -d
+#
+# Or bring just the api-gateway up once the main stack is already running:
+#   docker compose -f docker-compose.yml -f docker-compose.api-gateway.yml up -d api-gateway
+#
+# The api-gateway reaches patient-service via the in-cluster hostname
+# `patient-service:4000`, so it must be on the same `patient-network`
+# defined by the main compose — using `-f` keeps both files in the same
+# Compose project, so the network is reused rather than duplicated.
+
+services:
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    image: api-gateway:latest
+    container_name: api-gateway
+    restart: unless-stopped
+    networks:
+      - patient-network
+    ports:
+      - "${API_GATEWAY_PORT:-4004}:4004"
+    environment:
+      SERVER_PORT: 4004
+
+networks:
+  patient-network:
+    driver: bridge
