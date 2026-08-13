@@ -19,6 +19,26 @@ services:
       timeout: 5s
       retries: 5
 
+  auth-service:
+    image: postgres:17-alpine
+    container_name: auth-service-db
+    restart: unless-stopped
+    networks:
+      - patient-network
+    environment:
+      POSTGRES_DB: ${AUTH_POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${AUTH_POSTGRES_PORT}:5432"
+    volumes:
+      - auth_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   patient-service:
     image: patient-service:latest
     build:
@@ -134,6 +154,7 @@ services:
 volumes:
   postgres_data:
   kafka_data:
+  auth_data:
 
 networks:
   patient-network:
