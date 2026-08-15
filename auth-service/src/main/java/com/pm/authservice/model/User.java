@@ -36,8 +36,8 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(name = "role", nullable = false)
+    @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
-    private Roles ADMIN;
+    private Roles role;
 
 }
